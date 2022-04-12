@@ -10,6 +10,7 @@ public class SwiftFlutterCheckoutPaymentPlugin: NSObject, FlutterPlugin {
     /// Methods name which detect which it called from Flutter.
     private var METHOD_INIT : String = "init"
     private var METHOD_GENERATE_TOKEN : String = "generateToken"
+    private var METHOD_CREATE_APPLEPAY_TOKEN : String = "createApplePayToken"
     private var METHOD_IS_CARD_VALID : String = "isCardValid"
 
     /// Error codes returned to Flutter if there's an error.
@@ -99,6 +100,29 @@ public class SwiftFlutterCheckoutPaymentPlugin: NSObject, FlutterPlugin {
 
             // create the card token request
             checkoutAPIClient.createCardToken(card: cardTokenRequest, completion: { results in
+                do {
+                    switch results {
+                    case .success:
+                        // Return a result with the token.
+                        let jsonEncoder = JSONEncoder()
+                        let jsonData = try jsonEncoder.encode(results.get())
+                        let json = String(data: jsonData, encoding: String.Encoding.utf8)
+                        result(json)
+                    case .failure(let ex):
+                        result(FlutterError(code: "1", message: ex.localizedDescription, details: nil))
+                    }
+                } catch {
+                   result(FlutterError(code: "0", message: error.localizedDescription, details: nil))
+                }
+            })
+//            result(FlutterError(code: error.requestId, message: error.errorType, details: nil))
+        }
+        else if call.method == METHOD_CREATE_APPLEPAY_TOKEN {
+
+        
+            let data = try? JSONSerialization.data(withJSONObject: call.arguments!)
+        
+            checkoutAPIClient.createApplePayToken(paymentData: data!, completion: { results in
                 do {
                     switch results {
                     case .success:
